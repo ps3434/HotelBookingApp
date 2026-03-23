@@ -78,8 +78,6 @@ class BookingProcessor implements Runnable {
                 inventory.allocateRoom(request.roomType, request.guestName);
             }
         }
-    }
-}
 
 // Main Class
 public class UseCase11ConcurrentBookingSimulation {
