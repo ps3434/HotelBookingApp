@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 // Booking Class
 class Booking implements Serializable {
@@ -117,6 +118,7 @@ public class UseCase12DataPersistenceRecovery {
             inventory = new HotelInventory();
             bookings = new ArrayList<>();
         }
+    }
 
         // Step 2: Simulate bookings
         processBooking("Alice", "Single", inventory, bookings);
