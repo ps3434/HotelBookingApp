@@ -1,92 +1,124 @@
 import java.util.*;
+
+// Represents a confirmed reservation
 class Reservation {
+    private String reservationId;
     private String guestName;
     private String roomType;
-    public Reservation(String guestName, String roomType) {
+    private int nights;
+    private double totalCost;
+
+    public Reservation(String reservationId, String guestName, String roomType, int nights, double totalCost) {
+        this.reservationId = reservationId;
         this.guestName = guestName;
         this.roomType = roomType;
+        this.nights = nights;
+        this.totalCost = totalCost;
     }
+
+    public String getReservationId() {
+        return reservationId;
+    }
+
     public String getGuestName() {
         return guestName;
     }
+
     public String getRoomType() {
         return roomType;
     }
+
+    public int getNights() {
+        return nights;
+    }
+
+    public double getTotalCost() {
+        return totalCost;
+    }
+
+    @Override
+    public String toString() {
+        return "Reservation ID: " + reservationId +
+                ", Guest: " + guestName +
+                ", Room: " + roomType +
+                ", Nights: " + nights +
+                ", Total Cost: ₹" + totalCost;
+    }
 }
 
-class RoomInventory {
-    private Map<String, Integer> availability;
-    public RoomInventory() {
-        availability = new HashMap<>();
-        availability.put("Single", 5);
-        availability.put("Double", 3);
-        availability.put("Suite", 2);
+// Maintains booking history
+class BookingHistory {
+
+    private List<Reservation> reservations;
+
+    public BookingHistory() {
+        reservations = new ArrayList<>();
     }
-    public int getAvailableRooms(String roomType) {
-        return availability.getOrDefault(roomType, 0);
+
+    // Add confirmed reservation
+    public void addReservation(Reservation reservation) {
+        reservations.add(reservation);
     }
-    public void decrementInventory(String roomType) {
-        availability.put(roomType, availability.get(roomType) - 1);
+
+    // Retrieve all reservations (read-only usage expected)
+    public List<Reservation> getAllReservations() {
+        return reservations;
     }
 }
-class RoomAllocationService {
-    /* Stores all allocated room IDs */
-    private Set<String> allocatedRooms;
-    private Map<String, Set<String>> assignmentsByType;
-    public RoomAllocationService() {
-        allocatedRooms = new HashSet<>();
-        assignmentsByType = new HashMap<>();
-    }
-    public void allocateRoom(Reservation reservation, RoomInventory inventory) {
-        String roomType = reservation.getRoomType();
-        if (inventory.getAvailableRooms(roomType) <= 0) {
-            System.out.println("No rooms available for " + roomType);
+
+// Generates reports from booking history
+class BookingReportService {
+
+    // Display all bookings
+    public void showAllBookings(List<Reservation> reservations) {
+        if (reservations.isEmpty()) {
+            System.out.println("No booking history available.");
             return;
         }
-        String roomId = generateRoomId(roomType);
-        allocatedRooms.add(roomId);
-        assignmentsByType
-                .computeIfAbsent(roomType, k -> new HashSet<>())
-                .add(roomId);
 
-        inventory.decrementInventory(roomType);
-
-        System.out.println(
-                "Booking confirmed for Guest: "
-                        + reservation.getGuestName()
-                        + ", Room ID: "
-                        + roomId
-        );
+        System.out.println("\n=== Booking History ===");
+        for (Reservation r : reservations) {
+            System.out.println(r);
+        }
     }
-    private String generateRoomId(String roomType) {
 
-        int nextNumber = assignmentsByType
-                .getOrDefault(roomType, new HashSet<>())
-                .size() + 1;
+    // Generate summary report
+    public void generateSummary(List<Reservation> reservations) {
+        int totalBookings = reservations.size();
+        double totalRevenue = 0.0;
 
-        return roomType + "-" + nextNumber;
+        for (Reservation r : reservations) {
+            totalRevenue += r.getTotalCost();
+        }
+
+        System.out.println("\n=== Booking Summary Report ===");
+        System.out.println("Total Bookings: " + totalBookings);
+        System.out.println("Total Revenue: ₹" + totalRevenue);
     }
 }
-public class HotelBookingApp {
+
+// Main class
+public class UseCase8BookingHistoryReport {
 
     public static void main(String[] args) {
 
-        System.out.println("Room Allocation Processing\n");
+        BookingHistory history = new BookingHistory();
+        BookingReportService reportService = new BookingReportService();
 
-        RoomInventory inventory = new RoomInventory();
-        RoomAllocationService allocationService = new RoomAllocationService();
+        // Simulating confirmed bookings (from previous use cases)
+        Reservation r1 = new Reservation("RES101", "Alice", "Deluxe", 2, 4000);
+        Reservation r2 = new Reservation("RES102", "Bob", "Suite", 3, 9000);
+        Reservation r3 = new Reservation("RES103", "Charlie", "Standard", 1, 1500);
 
-        Queue<Reservation> bookingQueue = new LinkedList<>();
+        // Add to booking history
+        history.addReservation(r1);
+        history.addReservation(r2);
+        history.addReservation(r3);
 
-        bookingQueue.add(new Reservation("Anil", "Single"));
-        bookingQueue.add(new Reservation("Sara", "Single"));
-        bookingQueue.add(new Reservation("Venkatesh", "Suite"));
+        // Admin views booking history
+        reportService.showAllBookings(history.getAllReservations());
 
-        while (!bookingQueue.isEmpty()) {
-
-            Reservation reservation = bookingQueue.poll();
-
-            allocationService.allocateRoom(reservation, inventory);
-        }
+        // Admin generates summary report
+        reportService.generateSummary(history.getAllReservations());
     }
 }
